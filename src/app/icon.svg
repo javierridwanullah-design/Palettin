@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="pgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCE2D6"/>
+      <stop offset="50%" stop-color="#D98880"/>
+      <stop offset="100%" stop-color="#B7665E"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="24" fill="url(#pgrad)"/>
+  <circle cx="34" cy="36" r="10" fill="#FFF" opacity="0.9"/>
+  <circle cx="66" cy="36" r="10" fill="#DCE8DC"/>
+  <circle cx="72" cy="64" r="10" fill="#DBEAF2"/>
+  <circle cx="40" cy="70" r="12" fill="#2C2623" opacity="0.85"/>
+</svg>
+
