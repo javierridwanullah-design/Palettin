@@ -302,47 +302,142 @@ export function generateJSON(colors: ColorItem[]): string {
 }
 
 export function downloadSVG(colors: ColorItem[]) {
-  const w = 840,
-    h = 220,
-    bw = w / colors.length;
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h + 60}">
-    <rect width="${w}" height="${h + 60}" fill="#FBF9F5" rx="20"/>`;
+  const w = 920;
+  const h = 420;
+  const padding = 36;
+  const availableW = w - padding * 2;
+  const chipW = availableW / colors.length;
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">
+    <defs>
+      <style>
+        .title { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; fill: #2C2623; }
+        .sub { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 13px; fill: #726860; }
+        .hex { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; fill: #2C2623; }
+        .name { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 11px; fill: #A3978E; }
+        .pct { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; fill: #726860; }
+        .foot { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 11px; fill: #A3978E; }
+      </style>
+    </defs>
+    <rect width="${w}" height="${h}" fill="#FBF9F5" rx="24"/>
+    <rect x="20" y="20" width="${w - 40}" height="${h - 40}" fill="#FFFFFF" rx="18" stroke="#EDE5DC" stroke-width="1.5"/>
+
+    <!-- Header -->
+    <text x="${padding + 8}" y="62" class="title">Palettin.</text>
+    <text x="${padding + 8}" y="82" class="sub">Harmoni Palet Warna Terpilih (${colors.length} Warna)</text>`;
+
+  // Swatches
   colors.forEach((c, i) => {
-    const hx = toHex(c.r, c.g, c.b);
-    svg += `<rect x="${i * bw}" y="0" width="${bw}" height="${h}" fill="${hx}"/>`;
-    svg += `<text x="${i * bw + bw / 2}" y="${h + 38}" text-anchor="middle" fill="#726860" font-family="monospace" font-size="12">${hx.toUpperCase()}</text>`;
+    const hx = toHex(c.r, c.g, c.b).toUpperCase();
+    const name = getPastelName(c.r, c.g, c.b);
+    const x = padding + 8 + i * chipW;
+    const cw = chipW - 12;
+
+    svg += `
+      <g>
+        <rect x="${x}" y="110" width="${cw}" height="190" fill="${hx}" rx="14" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>
+        <text x="${x + cw / 2}" y="330" text-anchor="middle" class="hex">${hx}</text>
+        <text x="${x + cw / 2}" y="348" text-anchor="middle" class="name">${name}</text>
+        <text x="${x + cw / 2}" y="364" text-anchor="middle" class="pct">${c.percentage}%</text>
+      </g>`;
   });
-  svg += '</svg>';
-  const blob = new Blob([svg], { type: 'image/svg+xml' });
-  downloadBlob(blob, 'palettin.svg');
+
+  // Footer
+  svg += `
+    <text x="${w / 2}" y="${h - 32}" text-anchor="middle" class="foot">Dibuat dengan Palettin • Ekstraksi &amp; Harmoni Warna</text>
+  </svg>`;
+
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  downloadBlob(blob, 'palettin-palette.svg');
 }
 
 export function downloadPNG(colors: ColorItem[]) {
-  const w = 840,
-    h = 220,
-    fh = 60,
-    bw = w / colors.length;
+  const w = 920;
+  const h = 420;
+  const padding = 36;
+  const availableW = w - padding * 2;
+  const chipW = availableW / colors.length;
+
   const cv = document.createElement('canvas');
-  cv.width = w;
-  cv.height = h + fh;
+  cv.width = w * 2; // High-DPI 2x
+  cv.height = h * 2;
   const cx = cv.getContext('2d');
   if (!cx) return;
 
-  cx.fillStyle = '#FBF9F5';
-  cx.fillRect(0, 0, w, h + fh);
+  cx.scale(2, 2);
 
+  // Background
+  cx.fillStyle = '#FBF9F5';
+  cx.fillRect(0, 0, w, h);
+
+  // Card Inner
+  cx.fillStyle = '#FFFFFF';
+  cx.strokeStyle = '#EDE5DC';
+  cx.lineWidth = 1.5;
+  drawRoundRect(cx, 20, 20, w - 40, h - 40, 18);
+  cx.fill();
+  cx.stroke();
+
+  // Header
+  cx.fillStyle = '#2C2623';
+  cx.font = 'bold 24px "Playfair Display", Georgia, serif';
+  cx.fillText('Palettin.', padding + 8, 62);
+
+  cx.fillStyle = '#726860';
+  cx.font = '13px "Plus Jakarta Sans", -apple-system, sans-serif';
+  cx.fillText(`Harmoni Palet Warna Terpilih (${colors.length} Warna)`, padding + 8, 84);
+
+  // Color chips
   colors.forEach((c, i) => {
-    cx.fillStyle = toHex(c.r, c.g, c.b);
-    cx.fillRect(i * bw, 0, bw, h);
-    cx.fillStyle = '#726860';
-    cx.font = '12px monospace';
+    const hx = toHex(c.r, c.g, c.b).toUpperCase();
+    const name = getPastelName(c.r, c.g, c.b);
+    const x = padding + 8 + i * chipW;
+    const cw = chipW - 12;
+
+    // Color Swatch
+    cx.fillStyle = hx;
+    drawRoundRect(cx, x, 110, cw, 190, 14);
+    cx.fill();
+    cx.strokeStyle = 'rgba(0,0,0,0.06)';
+    cx.lineWidth = 1;
+    cx.stroke();
+
+    // Hex Code
+    cx.fillStyle = '#2C2623';
+    cx.font = 'bold 12px "JetBrains Mono", monospace';
     cx.textAlign = 'center';
-    cx.fillText(toHex(c.r, c.g, c.b).toUpperCase(), i * bw + bw / 2, h + 36);
+    cx.fillText(hx, x + cw / 2, 330);
+
+    // Pastel Name
+    cx.fillStyle = '#A3978E';
+    cx.font = '11px "Plus Jakarta Sans", sans-serif';
+    cx.fillText(name, x + cw / 2, 348);
+
+    // Percentage
+    cx.fillStyle = '#726860';
+    cx.font = '10px "JetBrains Mono", monospace';
+    cx.fillText(`${c.percentage}%`, x + cw / 2, 364);
   });
+
+  // Footer Watermark
+  cx.fillStyle = '#A3978E';
+  cx.font = '11px "Plus Jakarta Sans", sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('Dibuat dengan Palettin • Ekstraksi & Harmoni Warna', w / 2, h - 32);
 
   cv.toBlob(blob => {
-    if (blob) downloadBlob(blob, 'palettin.png');
-  });
+    if (blob) downloadBlob(blob, 'palettin-palette.png');
+  }, 'image/png');
+}
+
+function drawRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 function downloadBlob(blob: Blob, filename: string) {

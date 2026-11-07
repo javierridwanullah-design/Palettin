@@ -95,19 +95,40 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onImageSelected, onToast
         }
       }}
     >
-      <div className="upload-cluster">
-        <div className="cluster-bubble" style={{ background: 'var(--pastel-peach)' }}>🖼️</div>
-        <div className="cluster-bubble" style={{ background: 'var(--pastel-matcha)' }}>✨</div>
-        <div className="cluster-bubble" style={{ background: 'var(--pastel-sky)' }}>🎨</div>
+      {/* Tampilan Desktop: Drag & Drop + Ctrl+V */}
+      <div className="desktop-upload-header">
+        <div className="upload-cluster">
+          <div className="cluster-bubble" style={{ background: 'var(--pastel-peach)' }}>🖼️</div>
+          <div className="cluster-bubble" style={{ background: 'var(--pastel-matcha)' }}>✨</div>
+          <div className="cluster-bubble" style={{ background: 'var(--pastel-sky)' }}>🎨</div>
+        </div>
+        <h3>Tarik dan Lepaskan Foto di Sini</h3>
+        <p className="sub">
+          Mendukung format JPG, PNG, atau WEBP. Anda juga dapat menekan{' '}
+          <kbd style={{ background: 'var(--surface-subtle)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+            Ctrl + V
+          </kbd>{' '}
+          untuk menempelkan gambar.
+        </p>
       </div>
-      <h3>Tarik dan Lepaskan Foto di Sini</h3>
-      <p className="sub">
-        Mendukung format JPG, PNG, atau WEBP. Anda juga dapat menekan{' '}
-        <kbd style={{ background: 'var(--surface-subtle)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border)' }}>
-          Ctrl + V
-        </kbd>{' '}
-        untuk menempelkan gambar.
-      </p>
+
+      {/* Tampilan Khusus Smartphone / HP: Box Klik & Tambahkan Foto */}
+      <div
+        className="mobile-upload-box"
+        onClick={(e) => {
+          e.stopPropagation();
+          fileInputRef.current?.click();
+        }}
+      >
+        <div className="mobile-upload-icon">📷</div>
+        <div className="mobile-upload-text">
+          <h4>Klik &amp; Tambahkan Foto</h4>
+          <p>Ketuk untuk memilih foto dari galeri atau kamera HP Anda</p>
+        </div>
+        <button type="button" className="mobile-upload-btn">
+          Pilih Foto Galeri / Kamera
+        </button>
+      </div>
 
       <div className="clean-line">atau gunakan tautan gambar</div>
 
